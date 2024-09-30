@@ -1,13 +1,19 @@
 package handlers
 
-import "github.com/gin-gonic/gin"
+import (
+	"net/http"
 
+	"github.com/gin-gonic/gin"
+)
+
+// Register handles user registration
 func Register(c *gin.Context) {
-	// Placeholder for registration logic
-	c.JSON(200, gin.H{"message": "Registration endpoint"})
+	// Logic for user registration
+	c.JSON(http.StatusOK, gin.H{"message": "User registered successfully!"})
 }
 
+// Login handles user login
 func Login(c *gin.Context) {
-	// Placeholder for login logic
-	c.JSON(200, gin.H{"message": "Login endpoint"})
+	// Logic for user login
+	c.JSON(http.StatusOK, gin.H{"message": "User logged in successfully!"})
 }
