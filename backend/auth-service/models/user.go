@@ -35,6 +35,20 @@ func isEmailValid(email string) bool {
 	return reg.MatchString(email)
 }
 
-func IsUsernameTaken()
+func IsUsernameTaken(db *sql.DB, username string) (bool, error) {
+	var exists bool
+	err := db.QueryRow("SELECT EXISTS(SELECT 1 FROM users WHERE username = $1)", username).Scan(&exists)
+	if err != nil {
+		return false, err
+	}
+	return exists, err
+}
 
-func IsEmailTaken()
+func IsEmailTaken(db *sql.DB, email string) (bool, error) {
+	var exists bool
+	err := db.QueryRow("SELECT EXISTS(SELECT 1 FROM users WHERE email = $1)", email).Scan(&exists)
+	if err != nil {
+		return false, err
+	}
+	return exists, err
+}
