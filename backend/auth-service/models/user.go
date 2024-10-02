@@ -16,6 +16,27 @@ type User struct {
 	CreatedAt time.Time
 }
 
+// Register users if no errors, return (success, errors)
+func RegisterUser(db *sql.DB, username string, email string, password string) (bool, []error) {
+	errors := ValidateRegistration(db, username, email, password)
+	if len(errors) > 0 {
+		return false, errors
+	}
+
+	//Hash the password and add user to the DB
+	hashedPassword, err := utils.HashPassword(password)
+	if err != nil {
+		return false, []error{utils.NewRegistrationError(utils.ErrCodeHashingError, utils.ErrHashingError)} // Return hashing error
+	}
+	const query string = "INSERT INTO users (username, email, password, created_at) VALUES ($1, $2, $3, $4)"
+	_, err = db.Exec(query, username, email, hashedPassword, time.Now())
+	if err != nil {
+		return false, []error{utils.NewRegistrationError(utils.ErrCodeDatabaseError, utils.ErrDatabaseError)} // Return database error
+	}
+
+	return true, nil // Registration succesful
+}
+
 func ValidateRegistration(db *sql.DB, username string, email string, password string) []error {
 	var errorsList []error
 	// Validate the username and password with Regex
@@ -56,7 +77,7 @@ func IsEmailValid(email string) bool {
 }
 
 func IsPasswordValid(password string) bool {
-	reg := regexp.MustCompile(`^(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])(?=.*[!@#$%^&*(),.?":{}|<>])[A-Za-z\d!@#$%^&*(),.?":{}|<>]{8,}$`)
+	reg := regexp.MustCompile(`^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$`)
 	return reg.MatchString(password)
 }
 
