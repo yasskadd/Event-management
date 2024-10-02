@@ -17,6 +17,8 @@ const (
 	ErrCodePasswordTooWeak             // 2
 	ErrCodeEmailAlreadyTaken           // 3
 	ErrCodeUsernameAlreadyTaken        // 4
+	ErrCodeDatabaseError               // 5
+	ErrCodeHashingError                // 6
 )
 
 // Define constants for error messages
@@ -26,6 +28,8 @@ const (
 	ErrPasswordTooWeak      = "password must be at least 8 characters long, contain at least one uppercase letter, one lowercase letter, one number, and one special character"
 	ErrEmailAlreadyTaken    = "email is already taken"
 	ErrUsernameAlreadyTaken = "username is already taken"
+	ErrDatabaseError        = "an error occurred while interacting with the database"
+	ErrHashingError         = "an error occurred while hashing the password"
 )
 
 // NewRegistrationError creates a new RegistrationError.
