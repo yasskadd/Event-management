@@ -77,8 +77,15 @@ func IsEmailValid(email string) bool {
 }
 
 func IsPasswordValid(password string) bool {
-	reg := regexp.MustCompile(`^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$`)
-	return reg.MatchString(password)
+	if len(password) < 8 {
+		return false
+	}
+	hasLower := regexp.MustCompile(`[a-z]`).MatchString(password)
+	hasUpper := regexp.MustCompile(`[A-Z]`).MatchString(password)
+	hasDigit := regexp.MustCompile(`\d`).MatchString(password)
+	hasSpecial := regexp.MustCompile(`[\W_]`).MatchString(password)
+
+	return hasLower && hasUpper && hasDigit && hasSpecial
 }
 
 func IsUsernameTaken(db *sql.DB, username string) (bool, error) {
