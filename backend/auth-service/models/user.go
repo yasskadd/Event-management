@@ -16,14 +16,19 @@ type User struct {
 	CreatedAt time.Time
 }
 
-func RegisterUser(db *sql.DB, username string, email string, password string) []error {
+func ValidateRegistration(db *sql.DB, username string, email string, password string) []error {
 	var errorsList []error
 	// Validate the username and password with Regex
 	if !IsUsernameValid(username) {
 		errorsList = append(errorsList, utils.NewRegistrationError(utils.ErrCodeInvalidUsername, utils.ErrInvalidUsername))
 	}
-	if !isEmailValid(email) {
+	if !IsEmailValid(email) {
 		errorsList = append(errorsList, utils.NewRegistrationError(utils.ErrCodeInvalidEmail, utils.ErrInvalidEmail))
+	}
+
+	// Check if password is valid
+	if !IsPasswordValid(password) {
+		errorsList = append(errorsList, utils.NewRegistrationError(utils.ErrCodePasswordTooWeak, utils.ErrPasswordTooWeak))
 	}
 
 	// Check if username is already taken
@@ -45,9 +50,14 @@ func IsUsernameValid(username string) bool {
 	return reg.MatchString(username)
 }
 
-func isEmailValid(email string) bool {
+func IsEmailValid(email string) bool {
 	reg := regexp.MustCompile(`^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`)
 	return reg.MatchString(email)
+}
+
+func IsPasswordValid(password string) bool {
+	reg := regexp.MustCompile(`^(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])(?=.*[!@#$%^&*(),.?":{}|<>])[A-Za-z\d!@#$%^&*(),.?":{}|<>]{8,}$`)
+	return reg.MatchString(password)
 }
 
 func IsUsernameTaken(db *sql.DB, username string) (bool, error) {
