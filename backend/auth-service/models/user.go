@@ -4,6 +4,8 @@ import (
 	"database/sql"
 	"regexp"
 	"time"
+
+	"github.com/yasskadd/Event-management/auth-service/utils"
 )
 
 type User struct {
@@ -14,15 +16,28 @@ type User struct {
 	CreatedAt time.Time
 }
 
-func RegisterUser(db *sql.DB, username string, email string, password string) error {
+func RegisterUser(db *sql.DB, username string, email string, password string) []error {
+	var errorsList []error
 	// Validate the username and password with Regex
+	if !IsUsernameValid(username) {
+		errorsList = append(errorsList, utils.NewRegistrationError(utils.ErrCodeInvalidUsername, utils.ErrInvalidUsername))
+	}
+	if !isEmailValid(email) {
+		errorsList = append(errorsList, utils.NewRegistrationError(utils.ErrCodeInvalidEmail, utils.ErrInvalidEmail))
+	}
+
+	// Check if username is already taken
+	if taken, _ := IsUsernameTaken(db, username); taken {
+		errorsList = append(errorsList, utils.NewRegistrationError(utils.ErrCodeUsernameAlreadyTaken, utils.ErrUsernameAlreadyTaken))
+	}
 
 	// Check if email is already taken
-
-	//Check if username is already taken
+	if taken, _ := IsEmailTaken(db, email); taken {
+		errorsList = append(errorsList, utils.NewRegistrationError(utils.ErrCodeEmailAlreadyTaken, utils.ErrEmailAlreadyTaken))
+	}
 
 	// If everythings good, hash the password and add user to DB
-	return nil
+	return errorsList
 }
 
 func IsUsernameValid(username string) bool {
@@ -37,7 +52,8 @@ func isEmailValid(email string) bool {
 
 func IsUsernameTaken(db *sql.DB, username string) (bool, error) {
 	var exists bool
-	err := db.QueryRow("SELECT EXISTS(SELECT 1 FROM users WHERE username = $1)", username).Scan(&exists)
+	const query string = "SELECT EXISTS(SELECT 1 FROM users WHERE username = $1)"
+	err := db.QueryRow(query, username).Scan(&exists)
 	if err != nil {
 		return false, err
 	}
@@ -46,7 +62,8 @@ func IsUsernameTaken(db *sql.DB, username string) (bool, error) {
 
 func IsEmailTaken(db *sql.DB, email string) (bool, error) {
 	var exists bool
-	err := db.QueryRow("SELECT EXISTS(SELECT 1 FROM users WHERE email = $1)", email).Scan(&exists)
+	const query string = "SELECT EXISTS(SELECT 1 FROM users WHERE email = $1)"
+	err := db.QueryRow(query, email).Scan(&exists)
 	if err != nil {
 		return false, err
 	}
