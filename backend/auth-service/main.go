@@ -8,6 +8,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	_ "github.com/lib/pq" //PostgreSQL Driver
+	"github.com/yasskadd/Event-management/auth-service/middleware"
 	"github.com/yasskadd/Event-management/auth-service/routes"
 )
 
@@ -36,6 +37,9 @@ func main() {
 	}
 
 	router := gin.Default()
+
+	//Pass db to gin context
+	router.Use(middleware.DBMiddleware(db))
 
 	// Setup routes
 	routes.SetupRoutes(router)
