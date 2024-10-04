@@ -1,10 +1,12 @@
 package models
 
 import (
+	"net/http"
 	"os"
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
+	"github.com/gin-gonic/gin"
 )
 
 type TokenPayload struct {
@@ -68,4 +70,18 @@ func ValidateToken(tokenStr string) (*TokenPayload, error) {
 		Username:  username,
 		ExpiresAt: time.Unix(int64(exp), 0),
 	}, nil
+}
+
+func CreateCookie(c *gin.Context, token string) {
+	cookie := &http.Cookie{
+		Name:     "jwt_token",
+		Value:    token,
+		Expires:  time.Now().AddDate(0, 1, 0), // One month
+		Path:     "/",
+		HttpOnly: true,
+		Secure:   false, // Didn't implement HTTPS yet
+		SameSite: http.SameSiteLaxMode,
+	}
+
+	http.SetCookie(c.Writer, cookie)
 }
