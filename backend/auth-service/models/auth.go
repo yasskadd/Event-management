@@ -66,6 +66,6 @@ func ValidateToken(tokenStr string) (*TokenPayload, error) {
 	return &TokenPayload{
 		UserID:    int64(userID),
 		Username:  username,
-		ExpiresAt: time.Unix(int64(exp)),
+		ExpiresAt: time.Unix(int64(exp), 0),
 	}, nil
 }
