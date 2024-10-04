@@ -10,7 +10,12 @@ import (
 )
 
 type RegistrationRequest struct {
-	Username string `json:"username"` // Tags can be used to specify how to marshal/unmarshal JSON
+	Username string `json:"username"`
+	Email    string `json:"email"`
+	Password string `json:"password"`
+}
+
+type LoginRequest struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`
 }
@@ -45,8 +50,37 @@ func Register(c *gin.Context) {
 	c.IndentedJSON(http.StatusCreated, gin.H{"message": "User registered successfully!"})
 }
 
-// Login handles user login
 func Login(c *gin.Context) {
+	var request LoginRequest
+	if err := c.BindJSON(&request); err != nil {
+		fmt.Println("Error binding JSON:", err)
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": "Invalid input"})
+		return
+	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "User logged in successfully!"})
+	var db *sql.DB = c.MustGet("db").(*sql.DB)
+
+	//Validate Login
+	success, user, errors := models.ValidateLogin(db, request.Email, request.Password)
+
+	if !success {
+		fmt.Println("User login failed:", errors)
+		var errorMessages []string
+		for _, err := range errors {
+			errorMessages = append(errorMessages, err.Error())
+		}
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"errors": errorMessages})
+		return
+	}
+	// Generate JWT token
+	token, err := models.GenerateToken(user.ID, user.Username)
+	if err != nil {
+		c.IndentedJSON(http.StatusInternalServerError, gin.H{"error": "Could not generate token"})
+		return
+	}
+
+	// Create the cookie with the token
+	models.CreateCookie(c, token)
+
+	c.IndentedJSON(http.StatusOK, gin.H{"message": "User logged in successfully!", "token": token})
 }
