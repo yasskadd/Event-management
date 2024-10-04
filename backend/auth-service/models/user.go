@@ -72,10 +72,10 @@ func ValidateRegistration(db *sql.DB, username string, email string, password st
 	if !IsPasswordValid(password) {
 		errorsList = append(errorsList, utils.NewAuthentificationError(utils.ErrCodePasswordTooWeak, utils.ErrPasswordTooWeak))
 	}
-	if taken, _ := IsUsernameTaken(db, username); taken {
+	if taken, _ := dao.IsUsernameTaken(db, username); taken {
 		errorsList = append(errorsList, utils.NewAuthentificationError(utils.ErrCodeUsernameAlreadyTaken, utils.ErrUsernameAlreadyTaken))
 	}
-	if taken, _ := IsEmailTaken(db, email); taken {
+	if taken, _ := dao.IsEmailTaken(db, email); taken {
 		errorsList = append(errorsList, utils.NewAuthentificationError(utils.ErrCodeEmailAlreadyTaken, utils.ErrEmailAlreadyTaken))
 	}
 	return errorsList
@@ -101,24 +101,4 @@ func IsPasswordValid(password string) bool {
 	hasSpecial := regexp.MustCompile(`[\W_]`).MatchString(password)
 
 	return hasLower && hasUpper && hasDigit && hasSpecial
-}
-
-func IsUsernameTaken(db *sql.DB, username string) (bool, error) {
-	var exists bool
-	const query string = "SELECT EXISTS(SELECT 1 FROM users WHERE username = $1)"
-	err := db.QueryRow(query, username).Scan(&exists)
-	if err != nil {
-		return false, err
-	}
-	return exists, err
-}
-
-func IsEmailTaken(db *sql.DB, email string) (bool, error) {
-	var exists bool
-	const query string = "SELECT EXISTS(SELECT 1 FROM users WHERE email = $1)"
-	err := db.QueryRow(query, email).Scan(&exists)
-	if err != nil {
-		return false, err
-	}
-	return exists, err
 }

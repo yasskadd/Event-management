@@ -50,3 +50,23 @@ func UserExists(db *sql.DB, username string) (bool, error) {
 	}
 	return exists, nil
 }
+
+func IsUsernameTaken(db *sql.DB, username string) (bool, error) {
+	var exists bool
+	const query string = "SELECT EXISTS(SELECT 1 FROM users WHERE username = $1)"
+	err := db.QueryRow(query, username).Scan(&exists)
+	if err != nil {
+		return false, err
+	}
+	return exists, err
+}
+
+func IsEmailTaken(db *sql.DB, email string) (bool, error) {
+	var exists bool
+	const query string = "SELECT EXISTS(SELECT 1 FROM users WHERE email = $1)"
+	err := db.QueryRow(query, email).Scan(&exists)
+	if err != nil {
+		return false, err
+	}
+	return exists, err
+}
