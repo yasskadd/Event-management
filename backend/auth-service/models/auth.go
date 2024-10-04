@@ -20,7 +20,7 @@ var secretKey = []byte(os.Getenv("JWT_SECRET_KEY"))
 const MONTH_TO_HOURS int = 730
 
 func GenerateToken(userID int64, username string) (string, error) {
-	token := jwt.New(jwt.SigningMethodES256)
+	token := jwt.New(jwt.SigningMethodHS256)
 	claims := token.Claims.(jwt.MapClaims)
 
 	claims["userID"] = userID                                                        // Set the userID in payload
