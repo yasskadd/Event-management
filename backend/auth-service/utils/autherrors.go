@@ -1,12 +1,12 @@
 package utils
 
-type RegistrationError struct {
+type AuthentificationError struct {
 	Code    int
 	Message string
 }
 
 // Implements Error interface
-func (e *RegistrationError) Error() string {
+func (e *AuthentificationError) Error() string {
 	return e.Message
 }
 
@@ -36,6 +36,6 @@ const (
 )
 
 // NewRegistrationError creates a new RegistrationError.
-func NewRegistrationError(code int, message string) error {
-	return &RegistrationError{Code: code, Message: message}
+func NewAuthentificationError(code int, message string) error {
+	return &AuthentificationError{Code: code, Message: message}
 }
