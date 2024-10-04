@@ -8,9 +8,9 @@ import (
 )
 
 type TokenPayload struct {
-    UserID    int64     `json:"userID"`
-    Username  string    `json:"username"`
-    ExpiresAt time.Time `json:"expiresAt"`
+	UserID    int64     `json:"userID"`
+	Username  string    `json:"username"`
+	ExpiresAt time.Time `json:"expiresAt"`
 }
 
 var secretKey = []byte(os.Getenv("JWT_SECRET_KEY"))
@@ -34,14 +34,38 @@ func GenerateToken(userID int64, username string) (string, error) {
 	return tokenStr, nil
 }
 
-func ValidateToken(tokenStr string) {
-	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-        // Cast signing method to see if it's valid signing method
-        if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-            return nil, jwt.NewValidationError("Invalid signing method", jwt.ValidationErrorUnverifiable)
-        }
-        return secretKey, nil
-    })
+func ValidateToken(tokenStr string) (*TokenPayload, error) {
+	token, err := jwt.Parse(tokenStr, func(token *jwt.Token) (interface{}, error) {
+		// Cast signing method to see if it's valid signing method
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, jwt.NewValidationError("Invalid signing method", jwt.ValidationErrorUnverifiable)
+		}
+		return secretKey, nil
+	})
 
-	if err != nil or !token.isv
+	if err != nil || !token.Valid {
+		return nil, err
+	}
+
+	//Extract claims and verify if each claim is asserted to the correct data type (security measure)
+	claims, ok := token.Claims.(jwt.MapClaims)
+	if !ok {
+		return nil, jwt.NewValidationError("Invalid claims", jwt.ValidationErrorUnverifiable)
+	}
+
+	userID, ok_id := claims["userID"].(float64)
+
+	username, ok_username := claims["username"].(string)
+
+	exp, ok_exp := claims["exp"].(float64)
+
+	if !ok_id || !ok_username || !ok_exp {
+		return nil, jwt.NewValidationError("Invalid expiration time", jwt.ValidationErrorUnverifiable)
+	}
+
+	return &TokenPayload{
+		UserID:    int64(userID),
+		Username:  username,
+		ExpiresAt: time.Unix(int64(exp)),
+	}, nil
 }
