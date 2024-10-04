@@ -2,6 +2,7 @@ package models
 
 import (
 	"database/sql"
+	"fmt"
 	"regexp"
 	"time"
 
@@ -18,23 +19,29 @@ type User struct {
 
 // Register users if no errors, return (success, errors)
 func RegisterUser(db *sql.DB, username string, email string, password string) (bool, []error) {
+	// Validate registration input
 	errors := ValidateRegistration(db, username, email, password)
 	if len(errors) > 0 {
+		fmt.Println("Validation errors found:", errors)
 		return false, errors
 	}
 
-	//Hash the password and add user to the DB
+	// Hash the password and add user to the DB
 	hashedPassword, err := utils.HashPassword(password)
 	if err != nil {
+		fmt.Println("Error hashing password:", err)
 		return false, []error{utils.NewRegistrationError(utils.ErrCodeHashingError, utils.ErrHashingError)} // Return hashing error
 	}
+
 	const query string = "INSERT INTO users (username, email, password, created_at) VALUES ($1, $2, $3, $4)"
 	_, err = db.Exec(query, username, email, hashedPassword, time.Now())
 	if err != nil {
+		fmt.Println("Error inserting user into DB:", err)
 		return false, []error{utils.NewRegistrationError(utils.ErrCodeDatabaseError, utils.ErrDatabaseError)} // Return database error
 	}
 
-	return true, nil // Registration succesful
+	fmt.Println("User registered successfully!") // Success message
+	return true, nil                             // Registration successful
 }
 
 func ValidateRegistration(db *sql.DB, username string, email string, password string) []error {
