@@ -19,9 +19,10 @@ const (
 	ErrCodeUsernameAlreadyTaken        // 4
 	ErrCodeDatabaseError               // 5
 	ErrCodeHashingError                // 6
+	ErrCodeUserNotFound                // 7
+	ErrCodeInvalidPassword             // 8
 )
 
-// Define constants for error messages
 const (
 	ErrInvalidUsername      = "username must be between 5 to 20 characters and can only contain letters and numbers"
 	ErrInvalidEmail         = "invalid email format"
@@ -30,6 +31,8 @@ const (
 	ErrUsernameAlreadyTaken = "username is already taken"
 	ErrDatabaseError        = "an error occurred while interacting with the database"
 	ErrHashingError         = "an error occurred while hashing the password"
+	ErrUserNotFound         = "user not found"
+	ErrInvalidPassword      = "invalid password"
 )
 
 // NewRegistrationError creates a new RegistrationError.
