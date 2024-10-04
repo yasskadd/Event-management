@@ -7,6 +7,6 @@ import (
 
 // SetupRoutes initializes the routes for the auth service
 func SetupRoutes(router *gin.Engine) {
-	router.POST("/register", handlers.Register) // Placeholder for registration handler
-	router.POST("/login", handlers.Login)       // Placeholder for login handler
+	router.POST("/register", handlers.Register)
+	router.POST("/login", handlers.Login)
 }
