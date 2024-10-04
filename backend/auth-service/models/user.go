@@ -21,12 +21,8 @@ type User struct {
 func ValidateLogin(db *sql.DB, email string, password string) (bool, *dao.User, []error) {
 	var errorsList []error
 
-	if IsEmailValid(email) {
+	if !IsEmailValid(email) {
 		errorsList = append(errorsList, utils.NewRegistrationError(utils.ErrCodeInvalidEmail, utils.ErrInvalidEmail))
-	}
-
-	if taken, _ := IsEmailTaken(db, email); taken {
-		errorsList = append(errorsList, utils.NewRegistrationError(utils.ErrCodeEmailAlreadyTaken, utils.ErrEmailAlreadyTaken))
 	}
 
 	if len(errorsList) > 0 {
