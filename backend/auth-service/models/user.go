@@ -6,6 +6,7 @@ import (
 	"regexp"
 	"time"
 
+	"github.com/yasskadd/Event-management/auth-service/dao"
 	"github.com/yasskadd/Event-management/auth-service/utils"
 )
 
@@ -17,19 +18,39 @@ type User struct {
 	CreatedAt time.Time
 }
 
-func ValidateLogin(db *sql.DB, email string) (bool, []error) {
-	//Email must be valid, email must exist in DB
+func ValidateLogin(db *sql.DB, email string, password string) (bool, *dao.User, []error) {
 	var errorsList []error
-	if !IsEmailValid(email) {
+
+	if IsEmailValid(email) {
 		errorsList = append(errorsList, utils.NewRegistrationError(utils.ErrCodeInvalidEmail, utils.ErrInvalidEmail))
 	}
+
 	if taken, _ := IsEmailTaken(db, email); taken {
 		errorsList = append(errorsList, utils.NewRegistrationError(utils.ErrCodeEmailAlreadyTaken, utils.ErrEmailAlreadyTaken))
 	}
-	if len(errorsList) == 0 {
-		return true, nil
+
+	if len(errorsList) > 0 {
+		return false, nil, errorsList
 	}
-	return false, errorsList
+
+	user, err := dao.GetUserByEmail(db, email)
+	if err != nil {
+		errorsList = append(errorsList, fmt.Errorf("failed to retrieve user: %v", err))
+		return false, nil, errorsList
+	}
+
+	if user == nil {
+		errorsList = append(errorsList, utils.NewRegistrationError(utils.ErrCodeUserNotFound, utils.ErrUserNotFound))
+		return false, nil, errorsList
+	}
+
+	err = utils.CheckPassword(user.Password, password)
+	if err != nil {
+		errorsList = append(errorsList, utils.NewRegistrationError(utils.ErrCodeInvalidPassword, utils.ErrInvalidPassword))
+		return false, nil, errorsList
+	}
+
+	return true, user, nil
 }
 
 // Register users if no errors, return (success, errors)
