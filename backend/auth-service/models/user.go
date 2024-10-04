@@ -17,6 +17,21 @@ type User struct {
 	CreatedAt time.Time
 }
 
+func ValidateLogin(db *sql.DB, email string) (bool, []error) {
+	//Email must be valid, email must exist in DB
+	var errorsList []error
+	if !IsEmailValid(email) {
+		errorsList = append(errorsList, utils.NewRegistrationError(utils.ErrCodeInvalidEmail, utils.ErrInvalidEmail))
+	}
+	if taken, _ := IsEmailTaken(db, email); taken {
+		errorsList = append(errorsList, utils.NewRegistrationError(utils.ErrCodeEmailAlreadyTaken, utils.ErrEmailAlreadyTaken))
+	}
+	if len(errorsList) == 0 {
+		return true, nil
+	}
+	return false, errorsList
+}
+
 // Register users if no errors, return (success, errors)
 func RegisterUser(db *sql.DB, username string, email string, password string) (bool, []error) {
 	// Validate registration input

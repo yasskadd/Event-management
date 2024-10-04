@@ -47,6 +47,6 @@ func Register(c *gin.Context) {
 
 // Login handles user login
 func Login(c *gin.Context) {
-	// Logic for user login
+
 	c.JSON(http.StatusOK, gin.H{"message": "User logged in successfully!"})
 }
