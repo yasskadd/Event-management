@@ -84,3 +84,7 @@ func Login(c *gin.Context) {
 
 	c.IndentedJSON(http.StatusOK, gin.H{"message": "User logged in successfully!", "token": token})
 }
+
+func Logout(c *gin.Context) {
+
+}
