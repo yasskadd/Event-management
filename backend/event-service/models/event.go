@@ -15,3 +15,11 @@ type Event struct {
 	CreatedAt   time.Time
 	UpdatedAt   time.Time
 }
+
+type Subscription struct {
+	ID        uint      `json:"id" gorm:"primaryKey"`
+	UserID    uint      `json:"user_id"`  // FK to User
+	EventID   uint      `json:"event_id"` // FK to Event
+	Status    string    `json:"status"`   // "attending", "waitlist"
+	CreatedAt time.Time `json:"created_at"`
+}
