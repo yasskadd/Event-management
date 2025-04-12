@@ -1,38 +1,41 @@
-# Stage 1: Build the Event Service
+# Stage 1: Build the Go binary
 FROM golang:1.23-alpine AS builder
 
-# Environment setup
 ENV GO111MODULE=on \
     CGO_ENABLED=0 \
     GOOS=linux
 
-# Working directory inside the container
 WORKDIR /app
 
-# Copy and download dependencies
+# Copy module files and download dependencies
 COPY go.mod go.sum ./
 RUN go mod download
 
-# Copy the application code
+# Copy all source code
 COPY . .
 
-# Build the application
-RUN go build -o event-service main.go
+# Create a bin directory to place the compiled binary
+RUN mkdir -p /app/bin
 
-# Stage 2: Create a minimal runtime image
+# Build the binary
+RUN go build -o /app/bin/event-service main.go
+
+# Confirm it was built correctly
+RUN echo "[Builder] Contents of /app/bin:" && ls -lh /app/bin
+
+# Stage 2: Runtime image
 FROM alpine:latest
 
-# Add certificates for HTTPS
 RUN apk --no-cache add ca-certificates
 
-# Set the working directory
 WORKDIR /root/
 
-# Copy the built binary from the builder
-COPY --from=builder /app/event-service .
+# Copy the binary from the builder stage
+COPY --from=builder /app/bin/event-service .
 
-# Expose the service port
+# Confirm binary is here
+RUN echo "[Runtime] Contents of /root:" && ls -lh /root
+
 EXPOSE 8081
 
-# Run the service
 CMD ["./event-service"]
